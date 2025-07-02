@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>Real-time Sensor Data</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" crossorigin="anonymous">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
@@ -52,6 +53,24 @@
             color: #FF5733 !important;
             transition: transform 0.5s, color 0.5s;
         }
+        .warning {
+            background-color: #ffcccc;
+            color: #cc0000;
+            border: 1px solid #cc0000;
+            padding: 10px;
+            font-size: 1.1em;
+            margin: 10px 0;
+            display: none;
+        }
+        .notice {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #856404;
+            padding: 10px;
+            font-size: 1.1em;
+            margin: 10px 0;
+            display: none;
+        }
         /* Different colors for each data */
         .data-number { color: #007BFF; }
         .data-datetime { color: #FF5733; }
@@ -72,7 +91,7 @@
     </style>
     <script>
         function fetchData() {
-            fetch('data.txt')
+            fetch('data.csv')
                 .then(response => response.text())
                 .then(data => {
                     const lines = data.trim().split('\n');
@@ -82,10 +101,31 @@
                     updateElement('message_number', dataArray[0], 'data-number');
                     updateElement('datetime', dataArray[1], 'data-datetime');
                     updateElement('device', dataArray[2], 'data-device');
-                    updateElement('temperature', dataArray[3], 'data-temperature');
-                    updateElement('humidity', dataArray[4], 'data-humidity'); 
-                    updateElement('co2', dataArray[5], 'data-co2');
+                    updateElement('temperature', dataArray[3] + ' °C', 'data-temperature');
+                    updateElement('humidity', dataArray[4] + '%', 'data-humidity'); 
+                    updateElement('co2', dataArray[5] + ' ppm', 'data-co2');
                     updateElement('heart_rate', dataArray[6], 'data-heart-rate');
+
+                    const lastReported = new Date(dataArray[1].replace(' ', 'T')); // Convert to ISO format
+                    const now = new Date();
+                    const timeDiff = (now - lastReported) / (1000); // Difference in seconds
+                    const warningElement = document.getElementById('warning');
+                    const noticeElement = document.getElementById('notice');
+                    
+
+                    if (timeDiff > 10) {
+                        warningElement.innerText = 'The connection to the device has been lost. Please verify that the device is powered on and that all sensor connections are secure.';
+                        warningElement.style.display = 'block';
+                    } else {
+                        warningElement.style.display = 'none';
+                    }
+
+                    if (timeDiff > 120) {
+                        noticeElement.innerText = 'The data might not accurately reflect the current conditions in the room.';
+                        noticeElement.style.display = 'block';
+                    } else {
+                        noticeElement.style.display = 'none';
+                    }
                 });
         }
 
@@ -107,6 +147,8 @@
 <body>
     <div class="container">
         <h1>Real-time Sensor Data</h1>
+        <p id="warning" class="warning" style="display: none;"></p>
+        <p id="notice" class="notice" style="display: none;"></p>
         <p><i class="fas fa-hashtag icon icon-number"></i>Message Number: <span id="message_number" class="data data-number"></span></p>
         <p><i class="fas fa-clock icon icon-datetime"></i>Datetime: <span id="datetime" class="data data-datetime"></span></p>
         <p><i class="fas fa-microchip icon icon-device"></i>Device: <span id="device" class="data data-device"></span></p>
