@@ -10,7 +10,7 @@ const char* password = "your pass";
 
 // Server URL
 const char* serverUrl = "http://your-server-name/index.php";
-
+const char* apiKey = "your_api_key_here"; // this api key will be used for the backend, to prevent unauthorized access
 // Pulse Sensor
 int PulseSensorPurplePin = 36; // Pulse Sensor PURPLE WIRE connected to ANALOG PIN 0
 int LED = LED_BUILTIN;         // The on-board Arduino LED
@@ -111,7 +111,7 @@ void sendDataToServer() {
     http.begin(serverUrl);
 
     http.addHeader("Content-Type", "application/x-www-form-urlencoded");
-
+    http.addHeader("X-API-Key", apiKey);
     String postData = "device=ESP32&temperature=" + String(temperature) + "&humidity=" + String(humidity) + "&co2=" + String(co2) + "&heart_rate=" + String(heartRate);
 
     int httpResponseCode = http.POST(postData);
